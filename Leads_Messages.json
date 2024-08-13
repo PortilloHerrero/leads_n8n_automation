@@ -1,0 +1,413 @@
+{
+  "name": "Leads/Messages",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "id": "6e267b89-9c98-4fdc-a16b-f088ca376059",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1y6MQFYLB8OiJTODMzGelh6k3-5aujkaU0ZeAf8rJAMY/edit?gid=89465068#gid=89465068",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 89465068,
+          "mode": "list",
+          "cachedResultName": "LEADS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1y6MQFYLB8OiJTODMzGelh6k3-5aujkaU0ZeAf8rJAMY/edit#gid=89465068"
+        },
+        "options": {}
+      },
+      "id": "cf90c574-a0d7-4b10-8c81-eab46b4fc2c5",
+      "name": "Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        840,
+        120
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "swjdgytcaCVm2TLV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Qx1ggY0KFuhPUvN30dTwqhYgSd-MYtwrtS9YFY5Q8z8/edit?gid=1357298397#gid=1357298397",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1357298397,
+          "mode": "list",
+          "cachedResultName": "Messages",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qx1ggY0KFuhPUvN30dTwqhYgSd-MYtwrtS9YFY5Q8z8/edit#gid=1357298397"
+        },
+        "options": {}
+      },
+      "id": "a6bcaa2d-eac7-4542-b37a-835b036fae7d",
+      "name": "Messages",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        840,
+        380
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "swjdgytcaCVm2TLV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = [];\n\nconst leadItems = $('Leads').all();\nconst messageItems = $('Messages').all();\n\nfor (const item of leadItems) {\n  const interactions = item.json['interactions'];\n  const reminder = interactions !== undefined ? interactions : null;\n  const message = reminder !== null && messageItems[reminder] !== undefined ? messageItems[reminder].json['messages'] : null;\n  const email = item.json['email'];\n  const name = item.json['name'];  // Capturando el nombre del JSON\n\n  if (reminder !== null && message !== null && email !== undefined) {\n    const lead = { name, reminder, message, email };  // Incluyendo el nombre en el objeto lead\n    leads.push(lead);\n  }\n}\n\nreturn leads;\n"
+      },
+      "id": "fc67da05-9c36-4433-8967-80e5dba424b3",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        260
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "db23add0-daeb-47eb-adfb-206122b3ec9c",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1060,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "63bd08d7-45f1-4dfc-b076-7783bf7c58ba",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1700,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "92b11f3b-f14b-44eb-bc30-0d725931f6e4",
+              "leftValue": "={{$input.item.json.reminder}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bf7c45fc-3e2c-46d1-adc2-496c0c31eee2",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1960,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1y6MQFYLB8OiJTODMzGelh6k3-5aujkaU0ZeAf8rJAMY/edit?gid=1218099665#gid=1218099665",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1218099665,
+          "mode": "list",
+          "cachedResultName": "SENT",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1y6MQFYLB8OiJTODMzGelh6k3-5aujkaU0ZeAf8rJAMY/edit#gid=1218099665"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $input.item.json.email }}",
+            "message_sent": "={{ $input.item.json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_sent",
+              "displayName": "message_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f80b7af4-df1f-419c-8546-f7a9594a82c7",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        2220,
+        280
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "swjdgytcaCVm2TLV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "6759118386",
+        "text": "Messages sent succesfully!",
+        "additionalFields": {}
+      },
+      "id": "8acfcd1a-ea53-4c54-aa33-aafb13c6c8ca",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        40
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "koMYxudHZOb33LdR",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $input.item.json.email }}",
+        "subject": "\"Discover Our New Offers and Exclusive Benefits Just for You!\"",
+        "emailType": "text",
+        "message": "={{ $input.item.json.message_sent }}",
+        "options": {}
+      },
+      "id": "524d7a6d-2d65-43f6-8a11-7ec3af8d35d1",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2380,
+        460
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2Tw5rwoNqFGSAC2x",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener los elementos de entrada\nconst items = $input.all();\n\nitems.forEach(item => {\n  // Obtener el nombre del cliente desde la variable \"name\"\n  let nombreCliente = item.json.name;\n  \n  // Asegurarse de que la primera letra esté en mayúscula\n  nombreCliente = nombreCliente.charAt(0).toUpperCase() + nombreCliente.slice(1).toLowerCase();\n  \n  // Reemplazar '[Nombre del Cliente]' en el mensaje\n  item.json.message = item.json.message.replace('[Customer Name]', nombreCliente);\n  \n  // Reemplazar '[Nombre de la Empresa]' en el mensaje\n  const nombreEmpresa = 'ShopSphere';\n  item.json.message = item.json.message.replace('[Nombre de la Empresa]', nombreEmpresa);\n});\n\n// Devolver los items modificados\nreturn items;\n"
+      },
+      "id": "ff2e6a96-d330-4ec2-893c-c92f3afd0c9a",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        260
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Leads",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leads": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Messages": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b8c92859-8018-4d17-bc9a-353d5e75ec58",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee9b014e60e2263b4aeec490895c8dc5bd91e89d51d3b2febcb4b16c4a72272e"
+  },
+  "id": "7DtoH5zsxvpHNtOE",
+  "tags": []
+}
